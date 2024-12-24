@@ -7,12 +7,15 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import React from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { redirect, useRouter } from "next/navigation";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 import * as z from "zod";
 
 const formSchema = z.object({
@@ -23,6 +26,7 @@ const formSchema = z.object({
 
 const page = () => {
   const router = useRouter();
+  const [open, close] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,7 +38,24 @@ const page = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      const response = await fetch("http://localhost:4000/api/user/Signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+        return router.push("/login");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error: any) {
+      toast.error(error);
+    }
   };
 
   return (
@@ -59,6 +80,7 @@ const page = () => {
                         className="outline-none border-gray-500"
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -74,6 +96,7 @@ const page = () => {
                         className="outline-none border-gray-500"
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -84,11 +107,25 @@ const page = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        className="outline-none border-gray-500"
-                      />
+                      <div className="relative">
+                        <Input
+                          type={open ? "text" : "password"}
+                          {...field}
+                          className="outline-none border-gray-500"
+                        />
+                        <div className="absolute top-2 right-1  cursor-pointer">
+                          {open ? (
+                            <Eye onClick={() => close(!open)} type="button" />
+                          ) : (
+                            <EyeOff
+                              onClick={() => close(!open)}
+                              type="button"
+                            />
+                          )}
+                        </div>
+                      </div>
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -101,7 +138,9 @@ const page = () => {
                   Login
                 </span>
               </p>
-              <Button className="w-full">Signup</Button>
+              <Button type="submit" className="w-full">
+                Signup
+              </Button>
             </form>
           </Form>
         </div>

@@ -7,13 +7,16 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { Eye, EyeOff } from "lucide-react";
+import { toast } from "react-toastify";
 
 const formSchema = z.object({
   email: z.string(),
@@ -22,6 +25,7 @@ const formSchema = z.object({
 
 const page = () => {
   const router = useRouter();
+  const [open, close] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,15 +36,34 @@ const page = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      const response = await fetch("http://localhost:4000/api/user/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+        localStorage.setItem("Token", data.token);
+        return router.push("/");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error: any) {
+      toast.error(error);
+    }
   };
 
   return (
     <div className="flex justify-center">
       <div className=" w-1/3 px-3 py-5 bg-white mt-5 shadow-lg rounded-lg">
         <div className="text-center">
-          <h1 className="font-bold text-3xl">Signup</h1>
-          <p className="text-gray-400 text-sm">Signup to continue</p>
+          <h1 className="font-bold text-3xl">Login</h1>
+          <p className="text-gray-400 text-sm">Login to continue</p>
         </div>
         <div className="mt-5 px-5">
           <Form {...form}>
@@ -57,6 +80,7 @@ const page = () => {
                         className="outline-none border-gray-500"
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -67,11 +91,25 @@ const page = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        className="outline-none border-gray-500"
-                      />
+                      <div className="relative">
+                        <Input
+                          type={open ? "text" : "password"}
+                          {...field}
+                          className="outline-none border-gray-500"
+                        />
+                        <div className="absolute top-2 right-1  cursor-pointer">
+                          {open ? (
+                            <Eye onClick={() => close(!open)} type="button" />
+                          ) : (
+                            <EyeOff
+                              onClick={() => close(!open)}
+                              type="button"
+                            />
+                          )}
+                        </div>
+                      </div>
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -84,7 +122,9 @@ const page = () => {
                   Singup
                 </span>
               </p>
-              <Button className="w-full">Login</Button>
+              <Button type="submit" className="w-full">
+                Login
+              </Button>
             </form>
           </Form>
         </div>

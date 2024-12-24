@@ -4,6 +4,7 @@ const user = require("../Models/UserModel");
 const SignupUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
     if (!username || !email || !password) {
       return res.status(404).json({
         success: false,
@@ -35,6 +36,7 @@ const SignupUser = async (req, res) => {
     });
 
     User.save();
+
     return res.status(200).json({
       success: true,
       message: "User registred successfully",

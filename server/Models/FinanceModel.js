@@ -1,9 +1,14 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
 const finance = new mongoose.Schema({
   type: {
     type: String,
     required: true,
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
   },
   Amount: {
     type: String,

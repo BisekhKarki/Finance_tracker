@@ -28,6 +28,7 @@ const formSchema = z.object({
 });
 
 interface Transaction {
+  _id: String;
   type: string;
   userId: string;
   Amount: number;
@@ -38,9 +39,19 @@ interface Transaction {
 
 interface props {
   setData: (data: any) => void;
+  updateVal: [] | any;
+  itemId: String;
+  setUpdate: (updateVal: boolean) => void;
+  update: boolean;
 }
 
-const AddTransaction = ({ setData }: props) => {
+const EditTransaction = ({
+  setData,
+  updateVal,
+  itemId,
+  setUpdate,
+  update,
+}: props) => {
   const [userId, setUserId] = useState<string>("");
   const router = useRouter();
 
@@ -61,11 +72,11 @@ const AddTransaction = ({ setData }: props) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: "",
-      Amount: "",
-      Category: "",
-      Description: "",
-      Date: "",
+      type: updateVal?.type || "",
+      Amount: updateVal?.Amount || "",
+      Category: updateVal?.Category || "",
+      Description: updateVal?.Description || "",
+      Date: updateVal?.Date || new Date().toISOString().split("T")[0],
     },
   });
 
@@ -80,17 +91,25 @@ const AddTransaction = ({ setData }: props) => {
         Date: values.Date,
       };
       try {
-        const response = await fetch("http://localhost:4000/api/finance/add", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(val),
-        });
+        const response = await fetch(
+          `http://localhost:4000/api/finance/update/${itemId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(val),
+          }
+        );
         const data = await response.json();
         if (response.ok) {
           toast.success(data.message);
-          setData((prev: Transaction[]) => [...prev, val]);
+          setData((prev: Transaction[]) =>
+            prev.map((p: Transaction) =>
+              p._id === itemId ? { ...p, ...val } : p
+            )
+          );
+          setUpdate(false);
         }
       } catch (error: any) {
         toast.error(error);
@@ -102,7 +121,7 @@ const AddTransaction = ({ setData }: props) => {
   return (
     <div>
       <div className="bg-white px-5 py-5 rounded shadow w-96">
-        <h3 className="font-bold mb-2 text-xl">Add New Transaction</h3>
+        <h3 className="font-bold mb-2 text-xl">Edit Transaction</h3>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
             <FormField
@@ -215,7 +234,7 @@ const AddTransaction = ({ setData }: props) => {
 
                   <FormControl>
                     <Input
-                      placeholder="Select a Date"
+                      placeholder="Select a date"
                       {...field}
                       type="Date"
                       className="outline-none border-gray-500"
@@ -228,7 +247,7 @@ const AddTransaction = ({ setData }: props) => {
               type="submit"
               className="bg-blue-500 hover:bg-blue-700 w-full"
             >
-              <PlusCircle /> Add Transaction
+              <PlusCircle /> Edit Transaction
             </Button>
           </form>
         </Form>
@@ -237,4 +256,4 @@ const AddTransaction = ({ setData }: props) => {
   );
 };
 
-export default AddTransaction;
+export default EditTransaction;

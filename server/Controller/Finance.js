@@ -39,8 +39,6 @@ const getTransactionOnly = async (req, res) => {
       return tran.userId.toString() === userId;
     });
 
-    console.log(filterTransaction);
-
     if (!filterTransaction) {
       return res.status(404).json({
         success: false,

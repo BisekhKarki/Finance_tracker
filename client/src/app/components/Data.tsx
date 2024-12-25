@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import Chart from "./Chart";
 
 interface Transaction {
   _id: string;
@@ -124,6 +125,7 @@ const Data = ({
           )}
         </Table>
       </div>
+      <Chart />
     </div>
   );
 };

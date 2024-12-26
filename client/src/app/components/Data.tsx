@@ -125,7 +125,7 @@ const Data = ({
           )}
         </Table>
       </div>
-      <Chart />
+      <Chart Data={data} />
     </div>
   );
 };

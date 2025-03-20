@@ -12,7 +12,15 @@ const errorHandlerMiddleware = require("./Middleware/ErrorHandler");
 const notFoundMiddleWare = require("./Middleware/NotFoundMiddleWare");
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://client-frontend-zfkw.onrender.com",
+    ],
+    credentials: true,
+  })
+);
 
 // Routers
 app.use("/api/user", userRoute);

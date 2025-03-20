@@ -23,7 +23,7 @@ const formSchema = z.object({
   password: z.string().min(6, "Enter password more than 6 characters"),
 });
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
   const [open, close] = useState(false);
 
@@ -53,8 +53,8 @@ const page = () => {
       } else {
         toast.error(data.message);
       }
-    } catch (error: any) {
-      toast.error(error);
+    } catch (error: unknown) {
+      toast.error(String(error));
     }
   };
 
@@ -114,7 +114,7 @@ const page = () => {
                 )}
               />
               <p>
-                Don't have an account?
+                Dont have an account?
                 <span
                   className="underline text-blue-500 cursor-pointer"
                   onClick={() => router.push("/Signup")}
@@ -133,4 +133,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

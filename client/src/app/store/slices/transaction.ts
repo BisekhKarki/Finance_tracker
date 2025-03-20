@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 
 interface transactionProps {
   type: string;
@@ -21,15 +21,26 @@ export const addTransaction = createAsyncThunk(
         body: JSON.stringify(data),
       });
       if (response.ok) {
-        return response;
+        return response; // Return Response when successful
+      } else {
+        // Handle non-ok responses by rejecting with an error
+        const error = await response.json();
+        return rejectWithValue(error || "Failed to add transaction");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(error);
     }
   }
 );
 
-// Create a slice of state with actions
+// Define the state interface
+interface TransactionState {
+  transactions: transactionProps[];
+  loading: boolean;
+  error: unknown | null;
+  response: Response | null;
+}
+
 const transaction = createSlice({
   name: "counter",
   initialState: {
@@ -37,22 +48,28 @@ const transaction = createSlice({
     loading: false,
     error: null,
     response: null,
-  },
+  } as TransactionState,
   reducers: {},
-  extraReducers: (builder: any) => {
+  extraReducers: (builder) => {
     builder
-      .addCase(addTransaction.pending, (state: any) => {
+      .addCase(addTransaction.pending, (state) => {
         state.loading = true;
       })
-      .addCase(addTransaction.fulfilled, (state: any, action: any) => {
-        state.loading = false;
-        state.error = null;
-        state.response = action.payload;
-      })
-      .addCase(addTransaction.rejected, (state: any, action: any) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+      .addCase(
+        addTransaction.fulfilled,
+        (state, action: PayloadAction<Response>) => {
+          state.loading = false;
+          state.error = null;
+          state.response = action.payload;
+        }
+      )
+      .addCase(
+        addTransaction.rejected,
+        (state, action: PayloadAction<unknown>) => {
+          state.loading = false;
+          state.error = action.payload;
+        }
+      );
   },
 });
 

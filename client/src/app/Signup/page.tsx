@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import backedUrl from "@/lib/apiurl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -39,7 +40,7 @@ const Page = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await fetch("http://localhost:4000/api/user/Signup", {
+      const response = await fetch(`${backedUrl}/api/user/Signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

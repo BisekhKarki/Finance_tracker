@@ -140,6 +140,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "react-toastify";
 import Chart from "./Chart";
+import backedUrl from "@/lib/apiurl";
 
 interface Transaction {
   _id: string;
@@ -170,15 +171,12 @@ const Data = ({
 }: Values) => {
   const deleteItem = async (id: string) => {
     try {
-      const reponse = await fetch(
-        `http://localhost:4000/api/finance/delete/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const reponse = await fetch(`${backedUrl}/api/finance/delete/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       const datas = await reponse.json();
       if (reponse.ok) {
         toast.success(datas.message);

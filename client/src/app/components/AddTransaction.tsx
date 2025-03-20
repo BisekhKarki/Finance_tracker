@@ -255,6 +255,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import backedUrl from "@/lib/apiurl";
 
 const formSchema = z.object({
   type: z.string(),
@@ -318,7 +319,7 @@ const AddTransaction = ({ setData }: props) => {
         Date: values.Date,
       };
       try {
-        const response = await fetch("http://localhost:4000/api/finance/add", {
+        const response = await fetch(`${backedUrl}/api/finance/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

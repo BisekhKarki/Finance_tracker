@@ -146,6 +146,7 @@
 // export default Navbar;
 
 "use client";
+import backedUrl from "@/lib/apiurl";
 import { User, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useCallback } from "react"; // Added useCallback
@@ -186,16 +187,13 @@ const Navbar = () => {
   // Memoize getUserTransaction with useCallback
   const getUserTransaction = useCallback(async () => {
     try {
-      const response = await fetch(
-        "http://localhost:4000/api/finance/getSingle",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId }),
-        }
-      );
+      const response = await fetch(`${backedUrl}/api/finance/getSingle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
       const data = await response.json();
       if (response.ok) {
         setTransactions(data.message); // Expecting data.message to be Transaction[]

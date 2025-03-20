@@ -269,6 +269,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import backedUrl from "@/lib/apiurl";
 
 const formSchema = z.object({
   type: z.string(),
@@ -338,7 +339,7 @@ const EditTransaction = ({ setData, updateVal, itemId, setUpdate }: props) => {
       };
       try {
         const response = await fetch(
-          `http://localhost:4000/api/finance/update/${itemId}`,
+          `${backedUrl}/api/finance/update/${itemId}`,
           {
             method: "POST",
             headers: {

@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
+import backedUrl from "@/lib/apiurl";
 
 const formSchema = z.object({
   email: z.string(),
@@ -37,7 +38,7 @@ const Page = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await fetch("http://localhost:4000/api/user/login", {
+      const response = await fetch(`${backedUrl}/api/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

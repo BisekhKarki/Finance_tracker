@@ -198,6 +198,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import EditTransaction from "./components/EditTransactions";
+import backedUrl from "@/lib/apiurl";
 
 interface Transaction {
   _id: string;
@@ -234,16 +235,13 @@ export default function Home() {
 
   const getData = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:4000/api/finance/getSingle",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId }),
-        }
-      );
+      const response = await fetch(`${backedUrl}/api/finance/getSingle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
       const val = await response.json();
       if (response.ok) {
         setData(val.message);

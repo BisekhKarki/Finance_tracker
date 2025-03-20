@@ -8,9 +8,6 @@ const connection = require("./db/Connection");
 const userRoute = require("./routes/UserRoute");
 const financeRoute = require("./routes/FinanceRoute");
 
-const errorHandlerMiddleware = require("./Middleware/ErrorHandler");
-const notFoundMiddleWare = require("./Middleware/NotFoundMiddleWare");
-
 app.use(express.json());
 app.use(
   cors({
@@ -18,10 +15,14 @@ app.use(
       "http://localhost:3000",
       "https://client-frontend-zfkw.onrender.com",
     ],
-    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow necessary HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow necessary headers
+    credentials: true, // Allow cookies/auth headers if needed
   })
 );
 
+// Explicitly handle OPTIONS preflight requests
+app.options("*", cors());
 // Routers
 app.use("/api/user", userRoute);
 app.use("/api/finance", financeRoute);

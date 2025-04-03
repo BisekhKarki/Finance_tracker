@@ -1,6 +1,8 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { baseUrl } from "@/lib/BaseUrl";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 
-interface transactionProps {
+// Define the transaction type for TypeScript
+interface TransactionProps {
   type: string;
   userId: string;
   Amount: string;
@@ -9,51 +11,76 @@ interface transactionProps {
   Date: string;
 }
 
-export const addTransaction = createAsyncThunk(
-  "addTransaction",
-  async (data: transactionProps, { rejectWithValue }) => {
-    try {
-      const response = await fetch("http://localhost:4000/api/finance/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      if (response.ok) {
-        return response;
-      }
-    } catch (error: any) {
-      return rejectWithValue(error);
+// Define the API response type
+interface AddTransactionResponse {
+  message: string;
+  data: TransactionProps;
+}
+
+// Define the shape of the state
+interface TransactionState {
+  transactions: TransactionProps[];
+  loading: boolean;
+  error: string | null;
+  response: AddTransactionResponse | null;
+}
+
+export const addTransaction = createAsyncThunk<
+  AddTransactionResponse,
+  TransactionProps,
+  { rejectValue: string }
+>("addTransaction", async (data, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/finance/add`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      return rejectWithValue("Failed to add transaction");
     }
+
+    const responseData: AddTransactionResponse = await response.json();
+    return responseData;
+  } catch (error: unknown) {
+    return rejectWithValue(String(error));
   }
-);
+});
 
 // Create a slice of state with actions
-const transaction = createSlice({
-  name: "counter",
+const transactionSlice = createSlice({
+  name: "transaction",
   initialState: {
     transactions: [],
     loading: false,
     error: null,
     response: null,
-  },
+  } as TransactionState,
   reducers: {},
-  extraReducers: (builder: any) => {
+  extraReducers: (builder) => {
     builder
-      .addCase(addTransaction.pending, (state: any) => {
+      .addCase(addTransaction.pending, (state) => {
         state.loading = true;
       })
-      .addCase(addTransaction.fulfilled, (state: any, action: any) => {
-        state.loading = false;
-        state.error = null;
-        state.response = action.payload;
-      })
-      .addCase(addTransaction.rejected, (state: any, action: any) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+      .addCase(
+        addTransaction.fulfilled,
+        (state, action: PayloadAction<AddTransactionResponse>) => {
+          state.loading = false;
+          state.error = null;
+          state.response = action.payload;
+        }
+      )
+      .addCase(
+        addTransaction.rejected,
+        (state, action: PayloadAction<string | undefined>) => {
+          state.loading = false;
+          state.error = action.payload || "An unknown error occurred";
+        }
+      );
   },
 });
 
-export default transaction.reducer;
+export default transactionSlice.reducer;

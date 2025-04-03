@@ -1,18 +1,17 @@
 import { Pencil, Trash2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import Chart from "./Chart";
+import { baseUrl } from "@/lib/BaseUrl";
 
 interface Transaction {
   _id: string;
@@ -26,11 +25,11 @@ interface Transaction {
 
 interface Values {
   data: Transaction[];
-  setData: (data: any) => void;
+  setData: (data: Transaction[]) => void;
   setUpdate: (update: boolean) => void;
   update: boolean;
-  setUpdateVal: (data: any) => void;
-  setItemId: (itemId: String) => void;
+  setUpdateVal: (data: Transaction) => void;
+  setItemId: (itemId: string) => void;
 }
 
 const Data = ({
@@ -41,26 +40,21 @@ const Data = ({
   setUpdateVal,
   setItemId,
 }: Values) => {
-  const router = useRouter();
-
-  const deleteItem = async (id: String) => {
+  const deleteItem = async (id: string) => {
     try {
-      const reponse = await fetch(
-        `http://localhost:4000/api/finance/delete/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const datas = await reponse.json();
-      if (reponse.ok) {
+      const response = await fetch(`${baseUrl}/api/finance/delete/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const datas = await response.json();
+      if (response.ok) {
         toast.success(datas.message);
-        setData((prev: Transaction[]) => prev.filter((p: any) => p._id !== id));
+        setData(data.filter((p: Transaction) => p._id !== id)); // Updated here
       }
-    } catch (error: any) {
-      toast.error(error);
+    } catch (error: unknown) {
+      toast.error(String(error));
     }
   };
 
@@ -104,6 +98,7 @@ const Data = ({
                             Category: d.Category,
                             Description: d.Description,
                             Date: d.Date,
+                            userId: d.userId,
                           });
                         }}
                       />
@@ -119,7 +114,7 @@ const Data = ({
           ) : (
             <TableBody className="text-center">
               <TableRow className="text-center">
-                <TableCell>No Transactaion available</TableCell>
+                <TableCell>No Transaction available</TableCell>
               </TableRow>
             </TableBody>
           )}

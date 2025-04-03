@@ -1,15 +1,26 @@
 "use client";
+import { baseUrl } from "@/lib/BaseUrl";
 import { User, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
+
+// Define the type for a transaction
+interface Transaction {
+  _id: string;
+  type: "Income" | "Expenses";
+  Amount: string; // Adjust the type if needed based on actual response structure
+  Category: string;
+  Description: string;
+  Date: string;
+}
 
 const Navbar = () => {
   const [show, hide] = useState<boolean>(false);
   const router = useRouter();
-  const [token, setToken] = useState<String>("");
+  const [token, setToken] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
-  const [transactions, setTransaction] = useState<[] | any>([]);
+  const [transactions, setTransaction] = useState<Transaction[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("Token");
@@ -25,26 +36,23 @@ const Navbar = () => {
     }
   }, [router]);
 
-  const getUserTransaction = async () => {
+  const getUserTransaction = useCallback(async () => {
     try {
-      const response = await fetch(
-        "http://localhost:4000/api/finance/getSingle",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId }),
-        }
-      );
+      const response = await fetch(`${baseUrl}/api/finance/getSingle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
       const data = await response.json();
       if (response.ok) {
         setTransaction(data.message);
       }
-    } catch (error: any) {
-      toast.error(error);
+    } catch (error: unknown) {
+      toast.error(String(error));
     }
-  };
+  }, [userId]);
 
   const resetDataOnLogout = () => {
     setTransaction([]); // Reset transactions
@@ -56,17 +64,17 @@ const Navbar = () => {
     if (userId) {
       getUserTransaction();
     }
-  }, [userId, token]);
+  }, [userId, token, getUserTransaction]);
 
   const totalIncome = transactions.reduce(
-    (prev: any, curr: any) =>
-      curr.type === "Income" ? prev + parseInt(curr.Amount) : prev,
+    (prev: number, curr: Transaction) =>
+      curr.type === "Income" ? prev + parseFloat(curr.Amount) : prev,
     0
   );
 
   const totalExpenses = transactions.reduce(
-    (prev: any, curr: any) =>
-      curr.type === "Expenses" ? prev + parseInt(curr.Amount) : prev,
+    (prev: number, curr: Transaction) =>
+      curr.type === "Expenses" ? prev + parseFloat(curr.Amount) : prev,
     0
   );
 
@@ -123,7 +131,9 @@ const Navbar = () => {
           <div className="absolute top-4 left-3 w-32 z-[1000] ">
             <ul className="bg-white shadow-2xl rounded-xl px-5 py-2 text-sm space-y-1 border border-gray-300">
               <li className="cursor-pointer">My Profile</li>
-              <hr className="w-full" />
+              <li>
+                <hr className="w-full" />
+              </li>
               <li
                 className="cursor-pointer"
                 onClick={() => {

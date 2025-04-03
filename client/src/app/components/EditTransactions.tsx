@@ -14,10 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../store/store";
-import { addTransaction } from "../store/slices/transaction";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { baseUrl } from "@/lib/BaseUrl";
 
 const formSchema = z.object({
   type: z.string(),
@@ -28,7 +27,7 @@ const formSchema = z.object({
 });
 
 interface Transaction {
-  _id: String;
+  _id: string;
   type: string;
   userId: string;
   Amount: number;
@@ -37,21 +36,14 @@ interface Transaction {
   Date: string;
 }
 
-interface props {
-  setData: (data: any) => void;
-  updateVal: [] | any;
-  itemId: String;
+interface Props {
+  setData: (data: Transaction[]) => void;
+  updateVal: Transaction | null;
+  itemId: string;
   setUpdate: (updateVal: boolean) => void;
-  update: boolean;
 }
 
-const EditTransaction = ({
-  setData,
-  updateVal,
-  itemId,
-  setUpdate,
-  update,
-}: props) => {
+const EditTransaction = ({ setData, updateVal, itemId, setUpdate }: Props) => {
   const [userId, setUserId] = useState<string>("");
   const router = useRouter();
 
@@ -66,14 +58,13 @@ const EditTransaction = ({
         setUserId(parsedToken.id);
       }
     }
-  }, []);
-  console.log(userId);
+  }, [router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       type: updateVal?.type || "",
-      Amount: updateVal?.Amount || "",
+      Amount: updateVal?.Amount?.toString() || "",
       Category: updateVal?.Category || "",
       Description: updateVal?.Description || "",
       Date: updateVal?.Date || new Date().toISOString().split("T")[0],
@@ -85,14 +76,14 @@ const EditTransaction = ({
       const val = {
         type: values.type,
         userId: userId,
-        Amount: values.Amount,
+        Amount: parseFloat(values.Amount), // Convert Amount to a number
         Category: values.Category,
         Description: values.Description,
         Date: values.Date,
       };
       try {
         const response = await fetch(
-          `http://localhost:4000/api/finance/update/${itemId}`,
+          `${baseUrl}/api/finance/update/${itemId}`,
           {
             method: "POST",
             headers: {
@@ -104,17 +95,16 @@ const EditTransaction = ({
         const data = await response.json();
         if (response.ok) {
           toast.success(data.message);
-          setData((prev: Transaction[]) =>
-            prev.map((p: Transaction) =>
-              p._id === itemId ? { ...p, ...val } : p
-            )
+          const updatedData = data.map((p: Transaction) =>
+            p._id === itemId ? { ...p, ...val } : p
           );
+          setData(updatedData);
           setUpdate(false);
         }
-      } catch (error: any) {
-        toast.error(error);
+      } catch (error: unknown) {
+        toast.error(String(error));
       }
-      toast.success("Transaction added successfully");
+      toast.success("Transaction updated successfully");
     }
   };
 
@@ -132,7 +122,6 @@ const EditTransaction = ({
                   <FormLabel className="text-gray-600 font-bold">
                     Type
                   </FormLabel>
-                  <br />
                   <FormControl>
                     <select
                       {...field}
@@ -154,10 +143,9 @@ const EditTransaction = ({
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-600 font-bold ">
+                  <FormLabel className="text-gray-600 font-bold">
                     Amount
                   </FormLabel>
-
                   <FormControl>
                     <Input
                       placeholder="0.00"
@@ -177,12 +165,9 @@ const EditTransaction = ({
                   <FormLabel className="text-gray-600 font-bold">
                     Category
                   </FormLabel>
-                  <br />
                   <FormControl>
                     <select
                       {...field}
-                      //   value={types}
-                      //   onChange={(e) => setCategory(e.target.value)}
                       className="border border-gray-300 px-3 py-2 rounded shadow outline-none w-full"
                     >
                       <option value="" disabled>
@@ -209,7 +194,7 @@ const EditTransaction = ({
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-600 font-bold ">
+                  <FormLabel className="text-gray-600 font-bold">
                     Description
                   </FormLabel>
                   <FormControl>
@@ -228,10 +213,9 @@ const EditTransaction = ({
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-600 font-bold ">
+                  <FormLabel className="text-gray-600 font-bold">
                     Amount
                   </FormLabel>
-
                   <FormControl>
                     <Input
                       placeholder="Select a date"

@@ -1,4 +1,3 @@
-"use client";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -14,10 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../store/store";
-import { addTransaction } from "../store/slices/transaction";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { baseUrl } from "@/lib/BaseUrl";
 
 const formSchema = z.object({
   type: z.string(),
@@ -28,6 +26,7 @@ const formSchema = z.object({
 });
 
 interface Transaction {
+  _id: string; // Ensure _id is included if needed
   type: string;
   userId: string;
   Amount: number;
@@ -36,11 +35,11 @@ interface Transaction {
   Date: string;
 }
 
-interface props {
-  setData: (data: any) => void;
+interface Props {
+  setData: React.Dispatch<React.SetStateAction<Transaction[]>>; // Properly typed setData
 }
 
-const AddTransaction = ({ setData }: props) => {
+const AddTransaction = ({ setData }: Props) => {
   const [userId, setUserId] = useState<string>("");
   const router = useRouter();
 
@@ -55,8 +54,7 @@ const AddTransaction = ({ setData }: props) => {
         setUserId(parsedToken.id);
       }
     }
-  }, []);
-  console.log(userId);
+  }, [router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,16 +69,18 @@ const AddTransaction = ({ setData }: props) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (userId) {
-      const val = {
+      const val: Transaction = {
+        _id: "", // You may handle this if the server assigns it
         type: values.type,
         userId: userId,
-        Amount: values.Amount,
+        Amount: parseFloat(values.Amount), // Convert Amount to a number
         Category: values.Category,
         Description: values.Description,
         Date: values.Date,
       };
+
       try {
-        const response = await fetch("http://localhost:4000/api/finance/add", {
+        const response = await fetch(`${baseUrl}/api/finance/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -90,10 +90,11 @@ const AddTransaction = ({ setData }: props) => {
         const data = await response.json();
         if (response.ok) {
           toast.success(data.message);
-          setData((prev: Transaction[]) => [...prev, val]);
+          const newTransaction = { ...val, _id: data._id }; // Assuming _id is returned by the API
+          setData((prevData) => [...prevData, newTransaction]); // Fixed the issue here
         }
-      } catch (error: any) {
-        toast.error(error);
+      } catch (error: unknown) {
+        toast.error(String(error));
       }
       toast.success("Transaction added successfully");
     }
@@ -113,7 +114,6 @@ const AddTransaction = ({ setData }: props) => {
                   <FormLabel className="text-gray-600 font-bold">
                     Type
                   </FormLabel>
-                  <br />
                   <FormControl>
                     <select
                       {...field}
@@ -135,10 +135,9 @@ const AddTransaction = ({ setData }: props) => {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-600 font-bold ">
+                  <FormLabel className="text-gray-600 font-bold">
                     Amount
                   </FormLabel>
-
                   <FormControl>
                     <Input
                       placeholder="0.00"
@@ -158,12 +157,9 @@ const AddTransaction = ({ setData }: props) => {
                   <FormLabel className="text-gray-600 font-bold">
                     Category
                   </FormLabel>
-                  <br />
                   <FormControl>
                     <select
                       {...field}
-                      //   value={types}
-                      //   onChange={(e) => setCategory(e.target.value)}
                       className="border border-gray-300 px-3 py-2 rounded shadow outline-none w-full"
                     >
                       <option value="" disabled>
@@ -190,7 +186,7 @@ const AddTransaction = ({ setData }: props) => {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-600 font-bold ">
+                  <FormLabel className="text-gray-600 font-bold">
                     Description
                   </FormLabel>
                   <FormControl>
@@ -209,15 +205,14 @@ const AddTransaction = ({ setData }: props) => {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-600 font-bold ">
-                    Amount
+                  <FormLabel className="text-gray-600 font-bold">
+                    Date
                   </FormLabel>
-
                   <FormControl>
                     <Input
                       placeholder="Select a Date"
                       {...field}
-                      type="Date"
+                      type="date"
                       className="outline-none border-gray-500"
                     />
                   </FormControl>

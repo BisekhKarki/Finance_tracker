@@ -10,9 +10,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { baseUrl } from "@/lib/BaseUrl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -24,7 +25,7 @@ const formSchema = z.object({
   password: z.string().min(6, "Enter password more than 6 characters"),
 });
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
   const [open, close] = useState(false);
 
@@ -39,7 +40,7 @@ const page = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await fetch("http://localhost:4000/api/user/Signup", {
+      const response = await fetch(`${baseUrl}/api/user/Signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -53,8 +54,8 @@ const page = () => {
       } else {
         toast.error(data.message);
       }
-    } catch (error: any) {
-      toast.error(error);
+    } catch (error: unknown) {
+      toast.error(String(error));
     }
   };
 
@@ -149,4 +150,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

@@ -17,13 +17,14 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
+import { baseUrl } from "@/lib/BaseUrl";
 
 const formSchema = z.object({
   email: z.string(),
   password: z.string().min(6, "Enter password more than 6 characters"),
 });
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
   const [open, close] = useState(false);
 
@@ -37,7 +38,7 @@ const page = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await fetch("http://localhost:4000/api/user/login", {
+      const response = await fetch(`${baseUrl}/api/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -53,8 +54,8 @@ const page = () => {
       } else {
         toast.error(data.message);
       }
-    } catch (error: any) {
-      toast.error(error);
+    } catch (error: unknown) {
+      toast.error(String(error));
     }
   };
 
@@ -114,14 +115,15 @@ const page = () => {
                 )}
               />
               <p>
-                Don't have an account?
+                Don&apos;t have an account?
                 <span
                   className="underline text-blue-500 cursor-pointer"
                   onClick={() => router.push("/Signup")}
                 >
-                  Singup
+                  Signup
                 </span>
               </p>
+
               <Button type="submit" className="w-full">
                 Login
               </Button>
@@ -133,4 +135,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

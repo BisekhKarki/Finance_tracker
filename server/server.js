@@ -11,8 +11,17 @@ const financeRoute = require("./routes/FinanceRoute");
 const errorHandlerMiddleware = require("./Middleware/ErrorHandler");
 const notFoundMiddleWare = require("./Middleware/NotFoundMiddleWare");
 
+const url = process.env.frontendUrl || "http://localhost:3000/";
+
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: url,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Routers
 app.use("/api/user", userRoute);

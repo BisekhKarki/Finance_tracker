@@ -1,12 +1,11 @@
 "use client";
-import Image from "next/image";
-import AddTransaction from "./components/AddTransaction";
-import Data from "./components/Data";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import AddTransaction from "./components/AddTransaction";
+import Data from "./components/Data";
 import EditTransaction from "./components/EditTransactions";
+import { baseUrl } from "@/lib/BaseUrl";
 
 interface Transaction {
   _id: string;
@@ -21,10 +20,10 @@ interface Transaction {
 export default function Home() {
   const [data, setData] = useState<Transaction[]>([]);
   const router = useRouter();
-  const [userId, setUserId] = useState<String>("");
+  const [userId, setUserId] = useState<string>("");
   const [update, setUpdate] = useState<boolean>(false);
-  const [updateVal, setUpdateVal] = useState<[] | any>([]);
-  const [itemId, setItemId] = useState<String>("");
+  const [updateVal, setUpdateVal] = useState<Transaction | null>(null);
+  const [itemId, setItemId] = useState<string>("");
 
   useEffect(() => {
     const token = localStorage.getItem("Token");
@@ -41,32 +40,30 @@ export default function Home() {
     }
   }, [router]);
 
-  const getData = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:4000/api/finance/getSingle",
-        {
+  useEffect(() => {
+    if (!userId) return;
+
+    // ✅ Define `getData` inside `useEffect` to avoid dependency issues
+    const getData = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/finance/getSingle`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ userId }),
+        });
+        const val = await response.json();
+        if (response.ok) {
+          setData(val.message);
         }
-      );
-      const val = await response.json();
-      if (response.ok) {
-        setData(val.message);
+      } catch (error: unknown) {
+        toast.error(String(error));
       }
-    } catch (error: any) {
-      toast.error(error);
-    }
-  };
+    };
 
-  useEffect(() => {
-    if (userId) {
-      getData();
-    }
-  }, [userId, router]);
+    getData();
+  }, [userId]); // ✅ Only depends on `userId`
 
   return (
     <div className="py-5 flex px-32 gap-10">
@@ -75,7 +72,6 @@ export default function Home() {
           setData={setData}
           updateVal={updateVal}
           itemId={itemId}
-          update={update}
           setUpdate={setUpdate}
         />
       ) : (

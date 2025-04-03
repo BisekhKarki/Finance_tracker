@@ -16,7 +16,7 @@ const url = process.env.frontendUrl || "http://localhost:3000/";
 app.use(express.json());
 app.use(
   cors({
-    origin: url,
+    origin: "*",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],

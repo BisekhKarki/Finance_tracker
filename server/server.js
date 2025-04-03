@@ -11,12 +11,14 @@ const financeRoute = require("./routes/FinanceRoute");
 const errorHandlerMiddleware = require("./Middleware/ErrorHandler");
 const notFoundMiddleWare = require("./Middleware/NotFoundMiddleWare");
 
-const url = process.env.frontendUrl || "http://localhost:3000/";
+const frontendUrl = "https://client-frontend-zfkw.onrender.com";
+
+const url = frontendUrl || "http://localhost:3000";
 
 app.use(express.json());
 app.use(
   cors({
-    origin: "*",
+    origin: url,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
